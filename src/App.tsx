@@ -2,7 +2,7 @@ import { Redirect, Route } from "react-router-dom";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
-
+import Login from "./pages/Login";
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
 
@@ -22,6 +22,11 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import { useEffect } from "react";
+import DashBoard from "./pages/DashBoard";
+import Landing from "./pages/Landing";
+import AddAnimal from "./pages/AddAnimal";
+import AddAnimaCategory from "./pages/AddAnimalCategory";
+
 
 setupIonicReact();
 
@@ -34,8 +39,23 @@ const App: React.FC = () => {
           <Route exact path="/home">
             <Home />
           </Route>
+          <Route exact path="/login">
+            <Login />
+          </Route>
           <Route exact path="/">
-            <Redirect to="/home" />
+            <Redirect to="/login" />
+          </Route>
+          <Route exact path="/landing">
+            <Landing />
+          </Route>
+          <Route exact path="/addAnimal">
+            <AddAnimal />
+          </Route>
+          <Route exact path="/addAnimalCategory">
+            <AddAnimaCategory />
+          </Route>
+          <Route exact path = '/dashboard'>
+            <DashBoard />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

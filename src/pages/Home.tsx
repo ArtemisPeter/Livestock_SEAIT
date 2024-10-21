@@ -148,6 +148,7 @@ import {
                 type="text"
                 value={inputName}
                 onIonInput={(e) => setInputName(e.target.value as string)}
+                
               ></IonInput>
               <IonButton onClick={() => doEditItem(undefined)}>CANCEL</IonButton>
               <IonButton onClick={updateItem}>UPDATE</IonButton>

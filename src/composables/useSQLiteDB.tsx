@@ -66,6 +66,25 @@ const useSQLiteDB = () => {
       id INTEGER PRIMARY KEY NOT NULL,
       name TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS User (
+        id INTEGER PRIMARY KEY NOT NULL,
+        fname TEXT NOT NULL,
+        lname TEXT NOT NULL,
+        pincode INTEGER
+      );
+
+      INSERT OR IGNORE INTO User (fname, lname, pincode) 
+    VALUES ('Admin', 'istrator', 1234);
+
+    CREATE TABLE IF NOT EXISTS Animal_Type (
+      id INTEGER PRIMARY KEY NOT NULL,
+      type TEXT NOT NULL,
+      gestation_period INTEGER
+    );
+
+   
+
     `;
       const respCT = await db?.execute(queryCreateTable);
       console.log(`res: ${JSON.stringify(respCT)}`);
