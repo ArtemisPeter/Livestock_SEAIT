@@ -1600,9 +1600,9 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
                         <IonItem key={p.PregId} id={`${p.PregId}`}>
                             <IonItemSliding>
                             <IonItemOptions side="end">
-                                    <IonItemOption color="white" id={`preg-${p.PregId}`} onClick={()=>editDataPreg(p)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success'}><IonIcon slot="icon-only" icon={createOutline} ></IonIcon></IonItemOption>
-                                    <IonItemOption color="success" onClick={()=>SuccessPreg(p.PregId, p.ED_id, p.EH_id, p.animal_id_male)}  disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' }><IonIcon slot="icon-only" icon={checkmark} ></IonIcon></IonItemOption>
-                                    <IonItemOption color="warning" onClick={() => FailedPreg(p.PregId, p.ED_id, p.EH_id)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success'}><IonIcon slot="icon-only" icon={alertOutline} /></IonItemOption>
+                                    <IonItemOption color="white" id={`preg-${p.PregId}`} onClick={()=>editDataPreg(p)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={createOutline} ></IonIcon></IonItemOption>
+                                    <IonItemOption color="success" onClick={()=>SuccessPreg(p.PregId, p.ED_id, p.EH_id, p.animal_id_male)}  disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={checkmark} ></IonIcon></IonItemOption>
+                                    <IonItemOption color="warning" onClick={() => FailedPreg(p.PregId, p.ED_id, p.EH_id)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={alertOutline} /></IonItemOption>
 
                                 </IonItemOptions>
                                 <IonItem>

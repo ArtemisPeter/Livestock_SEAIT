@@ -11,7 +11,7 @@ type Feeds = {
 }
 
 const Feeds: React.FC = () => {
-    //separate fname etc. for displaying to the card and for input...
+    //separate fname etc. for displaying to the card and for input...ss
    const [feeds, setFeeds] = useState("");
    const [feedsData, setFeedsData] = useState<Array<Feeds>>()
     const {performSQLAction, initialized} = useSQLiteDB();
