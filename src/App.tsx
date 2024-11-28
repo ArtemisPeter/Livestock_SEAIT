@@ -25,7 +25,20 @@ import { useEffect } from "react";
 import DashBoard from "./pages/DashBoard";
 import Landing from "./pages/Landing";
 import AddAnimal from "./pages/AddAnimal";
-import AddAnimaCategory from "./pages/AddAnimalCategory";
+import AddAnimalCategory from "./pages/AddAnimalCategory";
+import AddAnimalType from "./pages/AddAnimalType";
+
+import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Preferences } from '@capacitor/preferences';
+import { Capacitor } from '@capacitor/core';
+import Person from "./pages/Person";
+import Vaccine from "./pages/Vaccine";
+import Feeds from "./pages/Feeds";
+import LiveStock_Feed from "./pages/LiveStock_Feed";
+import Disease from "./pages/Disease";
+import Livestock_Disease from "./pages/Livestock_Disease";
+
 
 
 setupIonicReact();
@@ -33,7 +46,8 @@ setupIonicReact();
 const App: React.FC = () => {
 
   return (
-    <IonApp>
+
+      <IonApp>
       <IonReactRouter>
         <IonRouterOutlet>
           <Route exact path="/home">
@@ -52,14 +66,35 @@ const App: React.FC = () => {
             <AddAnimal />
           </Route>
           <Route exact path="/addAnimalCategory">
-            <AddAnimaCategory />
+            <AddAnimalCategory />
           </Route>
-          <Route exact path = '/dashboard'>
-            <DashBoard />
+          <Route exact path="/addAnimalType">
+            <AddAnimalType />
+          </Route>
+          <Route exact path="/persons">
+            <Person />
+          </Route>
+          <Route exact path="/vaccine">
+            <Vaccine />
+          </Route>
+          <Route exact path="/feeds">
+            <Feeds />
+          </Route>
+          
+          <Route exact path="/disease">
+            <Disease />
+          </Route>
+          <Route exact path="/livestock_feed">
+            <LiveStock_Feed />
+          </Route>
+          <Route exact path="/livestock_disease">
+            <Livestock_Disease />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>
     </IonApp>
+
+    
   );
 };
 

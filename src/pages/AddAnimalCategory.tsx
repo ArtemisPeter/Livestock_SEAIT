@@ -23,14 +23,20 @@ const AddAnimaCategory: React.FC = () => {
         loadData();
     }, [initialized])
 
+    const clearData = () => {
+        setCategory("");
+        setGestation(0);
+    }
+
     const loadData = async () =>{
         try{
             performSQLAction(async(db:SQLiteDBConnection | undefined) => {
                 const data = await db?.query(`SELECT * FROM Animal_Type`);
+                console.log(data)
                 setDataCategory(data?.values)
             })
         }catch(error){
-            alert((error as Error).message);
+            console.log((error as Error).message);
             setDataCategory([]);
         }
     }
@@ -57,8 +63,10 @@ const AddAnimaCategory: React.FC = () => {
                             header: 'Success!',
                             buttons: ['OK']
                            });
+                           clearData();
                            const data = await db?.query(`SELECT * FROM Animal_Type`);
-                           setDataCategory(data?.values)
+                console.log(data)
+                setDataCategory(data?.values)
                     }
                 }
             )
@@ -198,7 +206,7 @@ const AddAnimaCategory: React.FC = () => {
 
         <IonFab id="addCat" slot="fixed" vertical="bottom" horizontal="end">
             <IonFabButton>
-                <IonIcon icon={add}></IonIcon>
+                <IonIcon icon={add} onClick={()=>clearData()}></IonIcon>
             </IonFabButton>
             
         </IonFab>
