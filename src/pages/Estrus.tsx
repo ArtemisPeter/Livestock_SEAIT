@@ -537,10 +537,10 @@ const InsertEstrusDetails = (EH_id:number, selectedAnimal:number, selectedType:s
                         <IonItem key={ed.id}>
                             <IonItemSliding>
                                 <IonItemOptions side="end">
-                                    <IonItemOption color="white" id={`edit${ed.id}`} onClick={()=>selectedEditEDetails(ed)}><IonIcon slot="icon-only" icon={createOutline} ></IonIcon></IonItemOption>
-                                    <IonItemOption color="success" ><IonIcon slot="icon-only" icon={checkmark} onClick={()=>setPregnant(ed.id, EH_id)}></IonIcon></IonItemOption>
-                                    <IonItemOption color="warning"><IonIcon slot="icon-only" icon={alertOutline} onClick={()=>setFailed(ed.id)}></IonIcon></IonItemOption>
-                                    <IonItemOption color="danger" ><IonIcon slot="icon-only" icon={closeOutline} onClick={()=>archiveED(ed.id)}></IonIcon></IonItemOption>
+                                    <IonItemOption color="white" id={`edit${ed.id}`} onClick={()=>selectedEditEDetails(ed)} disabled={ed.status === 'Failed' || ed.status === 'Success' ||ed.status === 'Given Birth'}><IonIcon slot="icon-only" icon={createOutline} ></IonIcon></IonItemOption>
+                                    <IonItemOption color="success" disabled={ed.status === 'Failed' || ed.status === 'Success' ||ed.status === 'Given Birth'}><IonIcon slot="icon-only" icon={checkmark} onClick={()=>setPregnant(ed.id, EH_id)}></IonIcon></IonItemOption>
+                                    <IonItemOption color="warning" disabled={ed.status === 'Failed' || ed.status === 'Success' ||ed.status === 'Given Birth'}><IonIcon slot="icon-only" icon={alertOutline} onClick={()=>setFailed(ed.id)}></IonIcon></IonItemOption>
+                                    <IonItemOption color="danger"  disabled={ed.status === 'Failed' || ed.status === 'Success' ||ed.status === 'Given Birth'}><IonIcon slot="icon-only" icon={closeOutline} onClick={()=>archiveED(ed.id)}></IonIcon></IonItemOption>
                                 </IonItemOptions>
                                 <IonItem>
                                     <IonLabel><h1>{date} <IonBadge color={

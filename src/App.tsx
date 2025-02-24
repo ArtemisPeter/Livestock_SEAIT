@@ -38,6 +38,7 @@ import Feeds from "./pages/Feeds";
 import LiveStock_Feed from "./pages/LiveStock_Feed";
 import Disease from "./pages/Disease";
 import Livestock_Disease from "./pages/Livestock_Disease";
+import AllAnimalMain from "./pages/AllAnimalMain";
 
 
 
@@ -63,7 +64,7 @@ const App: React.FC = () => {
             <Landing />
           </Route>
           <Route exact path="/addAnimal">
-            <AddAnimal />
+            <AllAnimalMain />
           </Route>
           <Route exact path="/addAnimalCategory">
             <AddAnimalCategory />
@@ -90,6 +91,11 @@ const App: React.FC = () => {
           <Route exact path="/livestock_disease">
             <Livestock_Disease />
           </Route>
+
+          <Route exact path="/specAnimal/:id">
+            <AddAnimal />
+          </Route>
+
         </IonRouterOutlet>
       </IonReactRouter>
     </IonApp>

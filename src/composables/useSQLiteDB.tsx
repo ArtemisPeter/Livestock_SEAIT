@@ -86,7 +86,7 @@ const useSQLiteDB = () => {
           breed TEXT NOT NULL,
           Animal_Type_id INTEGER
         );`,
-
+        
         `CREATE TABLE IF NOT EXISTS Animal (
           id INTEGER PRIMARY KEY NOT NULL,
           breed_id INTEGER, 
@@ -96,7 +96,8 @@ const useSQLiteDB = () => {
           pregnancy_status INTEGER NOT NULL,
           name TEXT NOT NULL,
           animal_father_id INTEGER, 
-          animal_mother_id INTEGER
+          animal_mother_id INTEGER,
+          archive INTEGER
         );`,
 
         `CREATE TABLE IF NOT EXISTS Health_Status (

@@ -92,7 +92,8 @@ const Livestock_Disease: React.FC = () => {
                 const data = await db?.query(`
                     SELECT DAH.id, DAH.animal_id, A.name As name, DAH.status, DAH.dateCured, DAH.vet_id, P.fname AS vet  FROM Disease_Animal_Header AS DAH
                     INNER JOIN Animal as A ON A.id = DAH.animal_id
-                    INNER JOIN Person AS P ON P.id = DAH.vet_id`
+                    INNER JOIN Person AS P ON P.id = DAH.vet_id
+                    WHERE A.archive = 0`
                 )
                 setAnimalData(data?.values)
             })
@@ -146,7 +147,8 @@ const Livestock_Disease: React.FC = () => {
                     const data = await db?.query(`
                         SELECT DAH.id, DAH.animal_id, A.name As name, DAH.status, DAH.dateCured, DAH.vet_id, P.fname AS vet  FROM Disease_Animal_Header AS DAH
                         INNER JOIN Animal as A ON A.id = DAH.animal_id
-                        INNER JOIN Person AS P ON P.id = DAH.vet_id`
+                        INNER JOIN Person AS P ON P.id = DAH.vet_id
+                        WHERE A.archive = 0`
                     )
 
                     const updateToSick = await db?.query(`
@@ -308,7 +310,8 @@ const HealedSelectedTreatment = (dah_id:number, animal_id:number) =>{
                 const data = await db?.query(`
                     SELECT DAH.id, DAH.animal_id, A.name As name, DAH.status, DAH.dateCured, DAH.vet_id, P.fname AS vet  FROM Disease_Animal_Header AS DAH
                     INNER JOIN Animal as A ON A.id = DAH.animal_id
-                    INNER JOIN Person AS P ON P.id = DAH.vet_id`
+                    INNER JOIN Person AS P ON P.id = DAH.vet_id
+                    WHERE A.archive = 0`
                 )
                 setAnimalData(data?.values)
             }

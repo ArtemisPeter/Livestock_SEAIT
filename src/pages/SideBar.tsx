@@ -60,7 +60,7 @@ const SideBar: React.FC = () =>{
                         <IonLabel>Transaction</IonLabel>
                     </IonItemDivider>
                     <IonItem>
-                        <IonLabel onClick={()=>history.push('/livestock_feed')}>Feed Livestock</IonLabel>
+                        <IonLabel onClick={()=>history.push('/livestock_feed')}>Feed / Supplement Livestock</IonLabel>
                     </IonItem>
                     <IonItem>
                         <IonLabel onClick={()=>history.push('/livestock_disease')}>Disease Livestock</IonLabel>

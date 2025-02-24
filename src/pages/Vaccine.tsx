@@ -130,7 +130,7 @@ const Vaccine: React.FC = () => {
                         <IonButtons slot="start">
                             <IonMenuButton></IonMenuButton>
                         </IonButtons>
-                        <IonTitle>Vaccine</IonTitle>
+                        <IonTitle>Vaccine / Supplement</IonTitle>
                     </IonToolbar>
                 </IonHeader>
                 <IonContent className="ion-padding">

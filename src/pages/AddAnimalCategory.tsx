@@ -67,6 +67,7 @@ const AddAnimaCategory: React.FC = () => {
                            const data = await db?.query(`SELECT * FROM Animal_Type`);
                 console.log(data)
                 setDataCategory(data?.values)
+                await db?.execute('COMMIT');
                     }
                 }
             )

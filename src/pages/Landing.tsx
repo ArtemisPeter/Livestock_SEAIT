@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  IonAlert,
   IonButton,
   IonButtons,
   IonCard,
@@ -25,6 +26,7 @@ import {
   IonTitle,
   IonToolbar,
   RefresherEventDetail,
+  useIonAlert,
 } from "@ionic/react";
 
 import SideBar from "./SideBar";
@@ -39,6 +41,7 @@ import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 
 import { saveAs } from "file-saver"; // Import FileSaver.js
+//import { updateAnimalProfile } from "../utils/EditReport";
 
 type Animal = {
   id: number; 
@@ -240,6 +243,8 @@ const Landing: React.FC = () => {
   const [TotalLiveStockDetailed, setLiveStockDetailed] = useState<Array<TotalLiveStockDetailed>>([])
   const [TotalPregnancyDetailed, setPregnancyDetailed] = useState<Array<TotalPregnancyDetailed>>([])
   const [TotalSickDetailed, setSickDetailed] = useState<Array<TotalSickDetailed>>([])
+  const [alertData, setAlertData] = useState<any>(null)
+  const [presentAlert] = useIonAlert();
 
   useEffect(()=>{
     LoadTotalLiveStock();
@@ -351,38 +356,37 @@ const Landing: React.FC = () => {
       reader.readAsDataURL(blob);
     });
   };
-  
-  
 
 
   const onNewScanResult = (decodedText: string, decodedResult: any) => {
     const str = decodedText;
     const theId = str.split(" - ")[0];
     console.log("Scanned ID: ", theId);
-     console.log(isOpen)
-    if(isOpen){
-      setIsOpen(false)
-    }
+    console.log(isOpen);
 
+    setIsOpen(false); // Close the modal if it’s already open
+
+  
     setTimeout(() => {
       setScannedId(theId);
-      setIsOpen(true); 
+      setIsOpen(true); // Open the modal after setting data
       loadAnimal(theId);
       LoadFeeds(theId);
-      LoadSupp(theId)
-      //LoadDisease(theId);
+      LoadSupp(theId);
+      // LoadDisease(theId); // Commented as per your current setup
       LoadGroupedDisease(theId);
       loadParents(theId);
       loadBreedingHistory(theId);
-      loadBreedHeader(theId)
-      loadBreedDetails(theId)
-      loadAnimalData(theId)
-    }, 0);
-    setIsOpen(true); 
+      loadBreedHeader(theId);
+      loadBreedDetails(theId);
+      loadAnimalData(theId);
+      LoadSupplement(theId)
+    }, 0); // Delay execution slightly to ensure modal's state change is handled properly
   };
   
+  
 
-  const loadAnimal = (theScannedId: string) => {
+  const loadAnimal = (theScannedId: any) => {
     try {
       performSQLAction(async (db: SQLiteDBConnection | undefined) => {
         const data = await db?.query(`SELECT Animal.id, 
@@ -425,7 +429,7 @@ const Landing: React.FC = () => {
           INNER JOIN Feeds as F ON F.id = FAD.feeds_id
           WHERE Animal.id = ?`, [theScannedId]);
         
-        console.log("Data loaded: ", data?.values); // Debug log
+        console.log("Data loaded FEEDS: ", data?.values); // Debug log
         if (data?.values.length) {
           setFeedsData(data.values);
           console.log(data)
@@ -440,10 +444,36 @@ const Landing: React.FC = () => {
     }
   }
 
+  const LoadSupplement = (theScannedId: string) =>{
+    try {
+      performSQLAction(async (db: SQLiteDBConnection | undefined) => {
+        const data = await db?.query(`SELECT Animal.id, FAH.id, F.Vaccine_Supplement,
+          FAS.Supplement_Remarks as remarks, FAS.Vaccine_Supplement_id, FAS.status, FAS.dateCreated
+          FROM Animal 
+          INNER JOIN Feed_Animal_Header AS FAH ON FAH.id = Animal.id
+          INNER JOIN Feed_Animal_Details_Supplement AS FAS ON FAS.Feed_Animal_Header = FAH.id
+          INNER JOIN Vaccine_Supplement as F ON F.id = FAS.Vaccine_Supplement_id
+          WHERE Animal.id = ?`, [theScannedId]);
+        
+        console.log("Supplement: ", data?.values); // Debug log
+        if (data?.values.length) {
+          //setFeedsData(data.values);
+          console.log(data)
+        } else {
+          console.log("No data found for ID: ", theScannedId); // Debug log
+          //setFeedsData([]); // Clear data if none found
+        }
+      });
+    } catch (error) {
+      console.log("Error loading animal data: ", (error as Error).message); // More detailed error logging
+      //setFeedsData([]);
+    }
+  }
+
   const LoadSupp = (theScannedId: string) =>{
     try {
       performSQLAction(async (db: SQLiteDBConnection | undefined) => {
-        const data = await db?.query(`SELECT Animal.id, FAH.id, F.feeds as supplement,
+        const data = await db?.query(`SELECT Animal.id, FAH.id, F.Vaccine_Supplement as supplement,
           FAD.Supplement_Remarks as remarks, FAD.Vaccine_Supplement_id, FAD.status
           FROM Animal 
           INNER JOIN Feed_Animal_Header AS FAH ON FAH.id = Animal.id
@@ -451,7 +481,7 @@ const Landing: React.FC = () => {
           INNER JOIN Vaccine_Supplement as F ON F.id = FAD.Vaccine_Supplement_id
           WHERE Animal.id = ?`, [theScannedId]);
         
-        console.log("Data loaded: ", data?.values); // Debug log
+        console.log("Data loadedSUPP: ", data?.values); // Debug log
         if (data?.values.length) {
           setSupplementData(data.values);
           console.log(data)
@@ -506,14 +536,14 @@ const Landing: React.FC = () => {
         const data = await db?.query(`SELECT Animal.id AS animalId, 
             FAH.id AS id, 
             D.disease AS disease, 
-            GROUP_CONCAT(F.feeds, ', ') AS vaccines, 
+            GROUP_CONCAT(F.Vaccine_Supplement, ', ') AS vaccines, 
             GROUP_CONCAT(FAD.remarks, ', ') AS remarks, 
             FAH.status AS status, 
             MIN(FAD.dateCreated) AS firstDateCreated, 
             MAX(FAH.dateCured) AS lastDateCured
          FROM Animal 
          INNER JOIN Disease_Animal_Header AS FAH ON FAH.animal_id = Animal.id
-         INNER JOIN Disease_Animal_Detail AS FAD ON FAD.disease_animal_header_id = FAH.id
+         LEFT JOIN Disease_Animal_Detail AS FAD ON FAD.disease_animal_header_id = FAH.id
          INNER JOIN Vaccine_Supplement AS F ON F.id = FAD.vaccine_supplement_id
          INNER JOIN Disease AS D ON D.id = FAD.disease_id
          WHERE Animal.id = ?
@@ -583,13 +613,13 @@ const Landing: React.FC = () => {
            
           `, [theScannedId]);
   
-        console.log("Breed: ", data?.values); // Debug log
+        console.log("BreedSSDSDSDS: ", data?.values); // Debug log
         if (data?.values.length) {
          setBreedHistory(data?.values)
           console.log(data);
         } else {
           console.log("Breed: ", theScannedId); // Debug log
-          // Clear data if none found
+          setBreedHistory([]);
         }
       });
     } catch (error) {
@@ -617,7 +647,7 @@ const Landing: React.FC = () => {
   
         console.log("Breed: ", data?.values); // Debug log
         if (data?.values.length) {
-         setBreedHistory(data?.values)
+         //setBreedHistory(data?.values)
           console.log(data);
         } else {
           console.log("Breed: ", theScannedId); // Debug log
@@ -680,7 +710,7 @@ const Landing: React.FC = () => {
     }
   }
 
-  const loadAnimalData = (theScannedId: string) => {
+  const loadAnimalData = (theScannedId: any) => {
     try {
       performSQLAction(async (db: SQLiteDBConnection | undefined) => {
         const query = `
@@ -1006,7 +1036,271 @@ const Landing: React.FC = () => {
       //setParentsData([]);
     }
   }
+   
+  const updateAnimalProfile = (animal_id: number, DataTransfer: string, kind: number): any   => {
 
+    if(kind === 1){
+        try{
+            performSQLAction(async(db:SQLiteDBConnection | undefined)=>{
+                const data = await db?.query(`
+                        UPDATE Animal Set name = ?
+                        WHERE id = ?
+                    `, [DataTransfer, animal_id]);
+
+                    if(data){
+                      
+                      const data = await db?.query(`SELECT Animal.id, 
+                        Animal.breed_id, Breed.breed, 
+                        Animal.gender, Animal.birthdate, 
+                        Animal.health_status_id, 
+                        Health_Status.status AS Health_Status, 
+                        pregnancy_status, Animal.name,
+                        Animal_Type.type AS AnimalKind, 
+                        animal_father_id AS Father, 
+                        animal_mother_id As Mother
+                        FROM Animal 
+                        INNER JOIN Breed ON Breed.id = Animal.breed_id 
+                        INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+                        INNER JOIN Animal_Type ON Breed.Animal_Type_id = Animal_Type.id
+                        WHERE Animal.id = ?`, [animal_id]);
+                          
+                        if (data?.values.length) {
+                          setAnimalData(data.values);
+                        } else {
+                          
+                          setAnimalData([]); // Clear data if none found
+                        }
+
+                        const query = `
+                        SELECT 
+              
+                       Animal.id AS AnimalId, 
+                       Animal.name AS AnimalName, 
+                       Animal.gender, 
+                       Animal.birthdate, 
+                       Animal.pregnancy_status, 
+                       Animal_Type.type AS AnimalType, 
+                       Breed.breed AS BreedName, 
+                       Health_Status.status AS HealthStatus,
+                       Feeds.feeds AS FeedName,
+                       Feed_Animal_Details_Feeds.feeds_remarks AS FeedRemarks,
+                       Vaccine_Supplement.Vaccine_Supplement AS SupplementName,
+                       Feed_Animal_Details_Supplement.Supplement_Remarks AS SupplementRemarks,
+                       Disease.disease AS DiseaseName,
+                       Disease_Animal_Detail.remarks AS DiseaseRemarks,
+                       Disease_Animal_Header.dateCreated AS DiseaseDateCreated,
+                       Disease_Animal_Header.dateCured AS DiseaseDateCured,
+                       MotherAnimal.name AS MotherName,
+                       FatherAnimal.name AS FatherName,
+                       Birth_Pregnanc_Head.id AS BirthRecordId,
+                       Birth_Pregnanc_Head.OffspringNum AS OffspringCount,
+                       Birth_Pregnanc_Head.AliveNum AS AliveCount,
+                       Birth_Pregnanc_Head.DeadNum AS DeadCount,
+                       Birth_Pregnanc_Head.SexMnum AS MaleCount,
+                       Birth_Pregnanc_Head.SexFNum AS FemaleCount
+                     FROM Animal
+                     LEFT JOIN Breed ON Breed.id = Animal.breed_id
+                     LEFT JOIN Animal_Type ON Animal_Type.id = Breed.Animal_Type_id
+                     LEFT JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+                     LEFT JOIN Feed_Animal_Header ON Feed_Animal_Header.animal_id = Animal.id
+                     LEFT JOIN Feed_Animal_Details_Feeds ON Feed_Animal_Details_Feeds.Feed_Animal_Header = Feed_Animal_Header.id
+                     LEFT JOIN Feeds ON Feeds.id = Feed_Animal_Details_Feeds.feeds_id
+                     LEFT JOIN Feed_Animal_Details_Supplement ON Feed_Animal_Details_Supplement.Feed_Animal_Header = Feed_Animal_Header.id
+                     LEFT JOIN Vaccine_Supplement ON Vaccine_Supplement.id = Feed_Animal_Details_Supplement.Vaccine_Supplement_id
+                     LEFT JOIN Disease_Animal_Header ON Disease_Animal_Header.animal_id = Animal.id
+                     LEFT JOIN Disease_Animal_Detail ON Disease_Animal_Detail.disease_animal_header_id = Disease_Animal_Header.id
+                     LEFT JOIN Disease ON Disease.id = Disease_Animal_Detail.disease_id
+                     LEFT JOIN Estrus_Head ON Estrus_Head.animal_id = Animal.id
+                     LEFT JOIN Estrus_Details ON Estrus_Details.Estrus_Head = Estrus_Head.id
+                     LEFT JOIN Pregnancy ON Pregnancy.estrus_details_id = Estrus_Details.id
+                     LEFT JOIN Birth_Pregnanc_Head ON Birth_Pregnanc_Head.pregnancy_id = Pregnancy.id
+                     LEFT JOIN Animal AS MotherAnimal ON MotherAnimal.id = Estrus_Head.animal_id
+                     LEFT JOIN Animal AS FatherAnimal ON FatherAnimal.id = Estrus_Details.animal_id_male
+                     WHERE Animal.id = ?
+                     `;
+               
+                     const result = await db?.query(query, [animal_id]);
+                     
+               
+                     if (result?.values.length) {
+                       setAnimalDetailedData(result.values); // Assuming you set the state with this function
+                      
+                     } else {
+                       
+                       setAnimalDetailedData([]);
+                     }
+                      presentAlert({
+                        header: "Success", 
+                        buttons: ['OK']
+                      });
+
+                      await db?.execute('COMMIT');
+                    }else{
+                      presentAlert({
+                        header: "Error", 
+                        buttons: ['OK']
+                      });
+                    }
+            })
+           }catch(error){
+            presentAlert({
+              header: "Error", 
+              buttons: ['OK']
+            });
+           }
+    }else if(kind === 2){
+      try{
+        performSQLAction(async(db:SQLiteDBConnection | undefined)=>{
+            const data = await db?.query(`
+                    UPDATE Animal Set birthdate = ?
+                    WHERE id = ?
+                `, [DataTransfer, animal_id]);
+
+                if(data){
+                  
+                  const data = await db?.query(`SELECT Animal.id, 
+                    Animal.breed_id, Breed.breed, 
+                    Animal.gender, Animal.birthdate, 
+                    Animal.health_status_id, 
+                    Health_Status.status AS Health_Status, 
+                    pregnancy_status, Animal.name,
+                    Animal_Type.type AS AnimalKind, 
+                    animal_father_id AS Father, 
+                    animal_mother_id As Mother
+                    FROM Animal 
+                    INNER JOIN Breed ON Breed.id = Animal.breed_id 
+                    INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+                    INNER JOIN Animal_Type ON Breed.Animal_Type_id = Animal_Type.id
+                    WHERE Animal.id = ?`, [animal_id]);
+                      
+                    if (data?.values.length) {
+                      setAnimalData(data.values);
+                    } else {
+                      
+                      setAnimalData([]); // Clear data if none found
+                    }
+
+                    const query = `
+                    SELECT 
+          
+                   Animal.id AS AnimalId, 
+                   Animal.name AS AnimalName, 
+                   Animal.gender, 
+                   Animal.birthdate, 
+                   Animal.pregnancy_status, 
+                   Animal_Type.type AS AnimalType, 
+                   Breed.breed AS BreedName, 
+                   Health_Status.status AS HealthStatus,
+                   Feeds.feeds AS FeedName,
+                   Feed_Animal_Details_Feeds.feeds_remarks AS FeedRemarks,
+                   Vaccine_Supplement.Vaccine_Supplement AS SupplementName,
+                   Feed_Animal_Details_Supplement.Supplement_Remarks AS SupplementRemarks,
+                   Disease.disease AS DiseaseName,
+                   Disease_Animal_Detail.remarks AS DiseaseRemarks,
+                   Disease_Animal_Header.dateCreated AS DiseaseDateCreated,
+                   Disease_Animal_Header.dateCured AS DiseaseDateCured,
+                   MotherAnimal.name AS MotherName,
+                   FatherAnimal.name AS FatherName,
+                   Birth_Pregnanc_Head.id AS BirthRecordId,
+                   Birth_Pregnanc_Head.OffspringNum AS OffspringCount,
+                   Birth_Pregnanc_Head.AliveNum AS AliveCount,
+                   Birth_Pregnanc_Head.DeadNum AS DeadCount,
+                   Birth_Pregnanc_Head.SexMnum AS MaleCount,
+                   Birth_Pregnanc_Head.SexFNum AS FemaleCount
+                 FROM Animal
+                 LEFT JOIN Breed ON Breed.id = Animal.breed_id
+                 LEFT JOIN Animal_Type ON Animal_Type.id = Breed.Animal_Type_id
+                 LEFT JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+                 LEFT JOIN Feed_Animal_Header ON Feed_Animal_Header.animal_id = Animal.id
+                 LEFT JOIN Feed_Animal_Details_Feeds ON Feed_Animal_Details_Feeds.Feed_Animal_Header = Feed_Animal_Header.id
+                 LEFT JOIN Feeds ON Feeds.id = Feed_Animal_Details_Feeds.feeds_id
+                 LEFT JOIN Feed_Animal_Details_Supplement ON Feed_Animal_Details_Supplement.Feed_Animal_Header = Feed_Animal_Header.id
+                 LEFT JOIN Vaccine_Supplement ON Vaccine_Supplement.id = Feed_Animal_Details_Supplement.Vaccine_Supplement_id
+                 LEFT JOIN Disease_Animal_Header ON Disease_Animal_Header.animal_id = Animal.id
+                 LEFT JOIN Disease_Animal_Detail ON Disease_Animal_Detail.disease_animal_header_id = Disease_Animal_Header.id
+                 LEFT JOIN Disease ON Disease.id = Disease_Animal_Detail.disease_id
+                 LEFT JOIN Estrus_Head ON Estrus_Head.animal_id = Animal.id
+                 LEFT JOIN Estrus_Details ON Estrus_Details.Estrus_Head = Estrus_Head.id
+                 LEFT JOIN Pregnancy ON Pregnancy.estrus_details_id = Estrus_Details.id
+                 LEFT JOIN Birth_Pregnanc_Head ON Birth_Pregnanc_Head.pregnancy_id = Pregnancy.id
+                 LEFT JOIN Animal AS MotherAnimal ON MotherAnimal.id = Estrus_Head.animal_id
+                 LEFT JOIN Animal AS FatherAnimal ON FatherAnimal.id = Estrus_Details.animal_id_male
+                 WHERE Animal.id = ?
+                 `;
+           
+                 const result = await db?.query(query, [animal_id]);
+                 
+           
+                 if (result?.values.length) {
+                   setAnimalDetailedData(result.values); // Assuming you set the state with this function
+                  
+                 } else {
+                   
+                   setAnimalDetailedData([]);
+                 }
+                  presentAlert({
+                    header: "Success", 
+                    buttons: ['OK']
+                  });
+
+                  await db?.execute('COMMIT');
+                }else{
+                  presentAlert({
+                    header: "Error", 
+                    buttons: ['OK']
+                  });
+                }
+        })
+       }catch(error){
+        presentAlert({
+          header: "Error", 
+          buttons: ['OK']
+        });
+       }
+    }
+
+   // return feedback;
+    
+};
+
+const UpdateFeeds = (remarks:string, id:number, an_id:number) =>{
+  try{
+      performSQLAction(async(db:SQLiteDBConnection | undefined)=>{
+          const data = await db?.query(`
+                 UPDATE Feed_Animal_Details_Feeds SET  feeds_remarks = ? WHERE id = ?
+              `, [remarks, id]);
+         if(data){
+             
+              const data = await db?.query(`SELECT Animal.id, FAH.id, F.feeds,
+                FAD.feeds_remarks as remarks, FAD.feeds_id, FAD.status, FAD.dateCreated
+                FROM Animal 
+                INNER JOIN Feed_Animal_Header AS FAH ON FAH.id = Animal.id
+                INNER JOIN Feed_Animal_Details_Feeds AS FAD ON FAD.Feed_Animal_Header = FAH.id
+                INNER JOIN Feeds as F ON F.id = FAD.feeds_id
+                WHERE Animal.id = ?`, [an_id]);
+            
+              if (data?.values.length) {
+                setFeedsData(data.values);
+                presentAlert({
+                  header: "Success", 
+                  buttons: ['OK']
+                });
+              } else {
+                
+                setFeedsData([]); 
+                presentAlert({
+                  header: "Error", 
+                  buttons: ['OK']
+                });
+              }
+          await db?.execute('COMMIT');
+          
+         }
+      })
+  }catch(error){
+      console.log((error as Error).message)
+  }
+}
 
   const closeSheet = () => {
     setIsOpen(false);
@@ -1436,10 +1730,42 @@ const Landing: React.FC = () => {
                         <IonInput value={a.id} readonly />
                       </IonItem>
                       
-                      <IonItem>
+                      <IonItem id={`Animal_${a.name}`}>
                         <IonLabel position="stacked">Name:</IonLabel>
                         <IonInput value={a.name} readonly />
                       </IonItem>
+                      
+                      <IonAlert
+                          trigger={`Animal_${a.name}`} // Ensuring unique trigger
+                          header="Edit Name"
+                          inputs={[
+                            {
+                              placeholder: 'Name',
+                              name: "name",
+                              value: alertData?.name || a.name // Ensure updated value is reflected
+                            }
+                          ]}
+                          buttons={[
+                            {
+                              text: 'Cancel',
+                              role: 'cancel'
+                            },
+                            {
+                              text: 'Save',
+                              role: 'confirm',
+                              handler: (data) => { // 'data' contains input values
+                                if (data.name) {
+                                  updateAnimalProfile(a.id, data.name, 1);
+                                }
+                              }
+                            }
+                          ]}
+                          onDidDismiss={(event) => {
+                            if (event.detail?.data) {
+                              setAlertData(event.detail.data); // Updates state when dismissed
+                            }
+                          }}
+                        />
                       
                       <IonItem>
                         <IonLabel position="stacked">Breed:</IonLabel>
@@ -1458,8 +1784,41 @@ const Landing: React.FC = () => {
                       
                       <IonItem>
                         <IonLabel position="stacked">Birthdate:</IonLabel>
-                        <IonInput value={formatDate(a.birthdate)} readonly />
+                        <IonInput id={`Bday_${a.birthdate}`} value={formatDate(a.birthdate)} readonly />
                       </IonItem>
+
+                      <IonAlert
+                          trigger={`Bday_${a.birthdate}`} // Ensuring unique trigger
+                          header="Edit Birtday"
+                          inputs={[
+                            {
+                              type: 'date',
+                              placeholder: 'Birthday',
+                              name: "bday",
+                              value: alertData?.bday || a.birthdate // Ensure updated value is reflected
+                            }
+                          ]}
+                          buttons={[
+                            {
+                              text: 'Cancel',
+                              role: 'cancel'
+                            },
+                            {
+                              text: 'Save',
+                              role: 'confirm',
+                              handler: (data) => { // 'data' contains input values
+                                if (data.bday) {
+                                  updateAnimalProfile(a.id, data.bday, 2);
+                                }
+                              }
+                            }
+                          ]}
+                          onDidDismiss={(event) => {
+                            if (event.detail?.data) {
+                              setAlertData(event.detail.data); // Updates state when dismissed
+                            }
+                          }}
+                        />
 
                       <IonItem lines="none">
                         <IonLabel className="ion-text-wrap"><h2><strong>Lineage Information</strong></h2></IonLabel>
@@ -1490,8 +1849,8 @@ const Landing: React.FC = () => {
                       </IonItem>
 
                       {FeedsData?.map((fd) => (
-                        <React.Fragment key={fd.id}>
-                          <IonCard className="ion-margin-top">
+                        <React.Fragment key={fd.id} >
+                          <IonCard className="ion-margin-top" id={`Feed_${fd.id}`}>
                             <IonCardContent>
                             <IonItem lines="none">
                             <IonLabel className="ion-text-wrap"><h2><strong>Feed & Nutrition Information</strong></h2></IonLabel>
@@ -1518,8 +1877,43 @@ const Landing: React.FC = () => {
                           </IonItem>
                             </IonCardContent>
                           </IonCard>
+
+                          <IonAlert
+                          trigger={`Feed_${fd.id}`} 
+                          header="Edit Feeding Information"
+                          inputs={[
+                            {
+                              type: 'text',
+                              placeholder: 'Remarks',
+                              name: "rmarks",
+                              value: alertData?.rmarks || fd.remarks 
+                            }
+                          ]}
+                          buttons={[
+                            {
+                              text: 'Cancel',
+                              role: 'cancel'
+                            },
+                            {
+                              text: 'Save',
+                              role: 'confirm',
+                              handler: (data) => { // 'data' contains input values
+                                if (data.rmarks) {
+                                  UpdateFeeds(data.rmarks, fd.feeds_id, fd.id);
+                                }
+                              }
+                            }
+                          ]}
+                          onDidDismiss={(event) => {
+                            if (event.detail?.data) {
+                              setAlertData(event.detail.data); // Updates state when dismissed
+                            }
+                          }}
+                        />
                           
                         </React.Fragment>
+
+                        
                       ))}
 
                       {SupplementData?.map((sd) => (

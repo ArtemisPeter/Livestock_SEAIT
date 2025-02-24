@@ -69,6 +69,7 @@ const LiveStock_Feed: React.FC = () =>{
                         SELECT FAH.id, A.id, A.name, B.breed FROM Feed_Animal_Header AS FAH 
                         INNER JOIN Animal AS A ON A.id = FAH.animal_id
                         INNER JOIN Breed AS B ON B.id = breed_id
+                        WHERE A.archive = 0
                     `);
                 setAnimalData(data?.values);
              
@@ -427,7 +428,7 @@ const LiveStock_Feed: React.FC = () =>{
                         <IonButtons slot="start">
                             <IonMenuButton></IonMenuButton>
                         </IonButtons>
-                        <IonTitle>Feedin'</IonTitle>
+                        <IonTitle>Feed & Supplement Livestock</IonTitle>
                     </IonToolbar>
                 </IonHeader>
                 <IonContent className="ion-padding">

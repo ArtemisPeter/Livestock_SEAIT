@@ -1,5 +1,5 @@
-import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonContent, IonDatetime, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonMenuButton, IonModal, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar, useIonAlert, RefresherEventDetail, IonTabs, IonTab, IonTabBar, IonTabButton, IonItemSliding, IonItemOption, IonItemOptions  } from "@ionic/react";
-import { add, alertOutline, bonfireOutline, checkmark, closeOutline, constructOutline, createOutline, fastFoodOutline, happyOutline, listOutline, male, medkitOutline } from "ionicons/icons";
+import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonContent, IonDatetime, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonMenuButton, IonModal, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar, useIonAlert, RefresherEventDetail, IonTabs, IonTab, IonTabBar, IonTabButton, IonItemSliding, IonItemOption, IonItemOptions, IonGrid  } from "@ionic/react";
+import { add, alertOutline, bonfireOutline, checkmark, closeOutline, constructOutline, createOutline, downloadOutline, fastFoodOutline, happyOutline, listOutline, male, medkitOutline, save, saveOutline } from "ionicons/icons";
 import React, { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import SideBar from "./SideBar";
@@ -12,6 +12,8 @@ import html2canvas from 'html2canvas'
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import Estrus from "./Estrus";
 import LiveStock_Feed from "./LiveStock_Feed";
+import { useParams } from "react-router";
+import { trashOutline } from "ionicons/icons";
 
 
 type Animal = {
@@ -25,7 +27,8 @@ type Animal = {
   pregnancy_status: number, 
   name: string,
   animal_father_id:number, 
-  animal_mother_id:number
+  animal_mother_id:number,
+  archive:number
 }
 
 type Father = {
@@ -201,9 +204,12 @@ const AddAnimal: React.FC = () =>{
   const [selectedFather, setSelectedFather] = useState(0);
   const [AddMotherData, setAddMotherData] = useState<Array<AddMother>>();
   const [addFatherData, setAddFatherData] = useState<Array<AddFather>>();
+  const {id} = useParams();
+
+  const AnimalTypeID = id;
 
   useEffect(()=>{
-    loadAnimal();
+    loadAnimal(AnimalTypeID);
     loadHealth();
     loadAnimalType();
     loadSup();
@@ -220,7 +226,7 @@ const AddAnimal: React.FC = () =>{
 
     const NewAnimal = () => {
     
-      loadAnimal();
+      loadAnimal(AnimalTypeID);
       loadAnimalType();
       setName("");
       setBirthdate("");
@@ -229,7 +235,7 @@ const AddAnimal: React.FC = () =>{
       setHealth(0)
     
   }
-  const loadAnimal = () => {
+  const loadAnimal = (AnimalTypeID:number) => {
     try{
       performSQLAction(async(db:SQLiteDBConnection | undefined) => {
         const data = await db?.query(`SELECT Animal.id, 
@@ -237,10 +243,11 @@ const AddAnimal: React.FC = () =>{
           Animal.gender, Animal.birthdate, 
           Animal.health_status_id, 
           Health_Status.status, 
-          pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id
+          pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id, Animal.archive
           FROM Animal 
           INNER JOIN Breed ON Breed.id = Animal.breed_id 
-          INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id`);
+          INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+          WHERE Breed.Animal_Type_id = ? AND Animal.archive = 0`, [AnimalTypeID]);
           setAnimalData(data?.values);
           console.log('ANIMAL', data?.values)
       })
@@ -292,7 +299,7 @@ const AddAnimal: React.FC = () =>{
   const loadAnimalType = async () => {
     try{
       performSQLAction(async(db:SQLiteDBConnection | undefined)=> {
-        const data = await db?.query(`SELECT * FROM Animal_Type`);
+        const data = await db?.query(`SELECT * FROM Animal_Type WHERE id = ?`, [AnimalTypeID]);
         setAnimalTypeData(data?.values);
         console.log(data);
       })
@@ -458,7 +465,7 @@ const AddAnimal: React.FC = () =>{
     console.log('Mother', mother_id);
     try{
       performSQLAction(async(db:SQLiteDBConnection | undefined)=> {
-        const add = await db?.query(`INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name,animal_father_id, animal_mother_id ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,[
+        const add = await db?.query(`INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name,animal_father_id, animal_mother_id, archive ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,[
           breed_id, gender, bday, health_stat, pregnancy_stat, name, father_id, mother_id
         ])
 
@@ -470,9 +477,6 @@ const AddAnimal: React.FC = () =>{
 
         // Extract the max id value safely
           const animalId = getTheAnimalIdResult?.values[0]?.maxId;
-      console.log(getTheAnimalIdResult)
-
-
         // Insert into Disease_Animal_Header using the retrieved animal id
         const insertToSick = await db?.query(`
           INSERT INTO Disease_Animal_Header (animal_id, dateCreated, status, dateCured, vet_id)
@@ -498,10 +502,11 @@ const AddAnimal: React.FC = () =>{
             Animal.gender, Animal.birthdate, 
             Animal.health_status_id, 
             Health_Status.status, 
-            pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id
+            pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id, Animal.archive
             FROM Animal 
             INNER JOIN Breed ON Breed.id = Animal.breed_id 
-            INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id`);
+            INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+            WHERE Breed.Animal_Type_id = ? AND Animal.archive = 0`, [AnimalTypeID]);
             setAnimalData(data?.values);
             console.log(data)
             const today = new Date().toISOString().split('T')[0];
@@ -519,13 +524,7 @@ const AddAnimal: React.FC = () =>{
             console.log(insertedId)
             
           }
-
-
-
           await db?.execute('COMMIT')
-          
-       
-         
         }else{
           presentAlert({
             header: "Error",
@@ -539,7 +538,7 @@ const AddAnimal: React.FC = () =>{
   }
 
   const updateAnimal = (breed_id:number, gender: string, bday: string, name: string, id: number) => {
-    console.log(bday)
+   
     try{
       performSQLAction(async(db:SQLiteDBConnection | undefined)=>{
         const updateData = await db?.query(
@@ -560,12 +559,12 @@ const AddAnimal: React.FC = () =>{
             Animal.gender, Animal.birthdate, 
             Animal.health_status_id, 
             Health_Status.status, 
-            pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id
+            pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id, Animal.archive
             FROM Animal 
             INNER JOIN Breed ON Breed.id = Animal.breed_id 
-            INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id`);
+            INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+            WHERE Breed.Animal_Type_id = ? AND Animal.archive = 0`, [AnimalTypeID]);
             setAnimalData(data?.values);
-            console.log(data)
             await db?.execute('COMMIT')
 
         }else{
@@ -573,6 +572,51 @@ const AddAnimal: React.FC = () =>{
             header: "Success", 
             buttons: ['OK']
           })
+
+          
+        }
+      })
+    }catch(error){  
+      console.log((error as Error).message);
+    }
+  }
+
+  const deleteAnimal = (animal_id:number) =>{
+    try{
+      performSQLAction(async(db:SQLiteDBConnection | undefined)=>{
+        const updateData = await db?.query(
+          `UPDATE Animal 
+           SET archive = 1
+           WHERE id = ?`, 
+          [animal_id]
+        );
+        
+        if(updateData){
+          presentAlert({
+            header: "Success", 
+            buttons: ['OK']
+          });
+          
+          const data = await db?.query(`SELECT Animal.id, 
+            Animal.breed_id, Breed.breed, 
+            Animal.gender, Animal.birthdate, 
+            Animal.health_status_id, 
+            Health_Status.status, 
+            pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id, Animal.archive
+            FROM Animal 
+            INNER JOIN Breed ON Breed.id = Animal.breed_id 
+            INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+            WHERE Breed.Animal_Type_id = ? AND Animal.archive = 0`, [AnimalTypeID]);
+            setAnimalData(data?.values);
+            await db?.execute('COMMIT')
+
+        }else{
+          presentAlert({
+            header: "Success", 
+            buttons: ['OK']
+          })
+
+          
         }
       })
     }catch(error){  
@@ -608,7 +652,7 @@ const AddAnimal: React.FC = () =>{
   const refreshThePage = (event: CustomEvent<RefresherEventDetail>) => {
     setTimeout(() => {
       loadAnimalType(); // Call your data-loading function
-      loadAnimal();
+      loadAnimal(id);
   
       // Signal that the refresh has completed
       event.detail.complete();
@@ -893,10 +937,11 @@ const givenBirth = (pregId:number, offSpringNum:number, AliveNum:number, Male: n
         Animal.gender, Animal.birthdate, 
         Animal.health_status_id, 
         Health_Status.status, 
-        pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id 
+        pregnancy_status, Animal.name, Animal.animal_father_id, Animal.animal_mother_id, Animal.archive
         FROM Animal 
         INNER JOIN Breed ON Breed.id = Animal.breed_id 
-        INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id`);
+        INNER JOIN Health_Status ON Health_Status.id = Animal.health_status_id
+        WHERE Breed.Animal_Type_id = ? AND Animal.archive = 0`, [AnimalTypeID]);
         setAnimalData(data?.values);
         console.log(data);
     
@@ -1387,8 +1432,44 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
                         <IonSelectOption value={0}>No</IonSelectOption>
                        </IonSelect>
                   </IonRow> ) : null}
-                <IonButton expand="block" className="ion-margin-top ion-margin-bottom" onClick={() => updateAnimal(breed, gender, birthdate, name, modalAn.id)}>Update</IonButton>
-                <IonButton expand="block" onClick={downloadBarcode}>Download Barcode</IonButton>
+                      
+                  <IonGrid fixed={true}>
+  <IonRow>
+    <IonCol>
+      <IonButton 
+        expand="block" 
+        size="large" 
+        className="ion-margin-vertical" 
+        onClick={() => updateAnimal(breed, gender, birthdate, name, modalAn.id)}
+      >
+        <IonIcon icon={saveOutline} slot="icon-only" />
+      </IonButton>
+    </IonCol>
+
+    <IonCol>
+      <IonButton 
+        expand="block" 
+        size="large" 
+        className="ion-margin-vertical" 
+        onClick={downloadBarcode}
+      >
+        <IonIcon icon={downloadOutline} slot="icon-only" />
+      </IonButton>
+    </IonCol>
+
+    <IonCol>
+      <IonButton 
+        expand="block" 
+        size="large" 
+        className="ion-margin-vertical" 
+        color="danger" 
+        onClick={() => deleteAnimal(modalAn.id)}
+      >
+        <IonIcon icon={trashOutline} slot="icon-only" />
+      </IonButton>
+    </IonCol>
+  </IonRow>
+</IonGrid>
                   </div>
              
                 </IonTab>

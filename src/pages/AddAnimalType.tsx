@@ -108,13 +108,12 @@ const AddAnimalType: React.FC = () => {
                                     buttons: ['OK']
                                 });
                             }
-                            eraseData();
+                          
                             const data = await db?.query(`SELECT Breed.breed , Breed.breed , Animal_Type.type, Breed.Animal_Type_id, Animal_Type.gestation_period FROM Breed INNER JOIN Animal_Type ON Animal_Type.id = Breed.Animal_Type_id`);
                             setAnimals(data?.values);
                             console.log(data)
-                            await db?.execute('COMMIT')
                             
-                          
+                            await db?.execute('COMMIT')
                         }
                     }
                 )
