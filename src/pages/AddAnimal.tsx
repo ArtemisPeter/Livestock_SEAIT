@@ -878,8 +878,8 @@ const givenBirth = (pregId:number, offSpringNum:number, AliveNum:number, Male: n
 
         for (let i = 0; i < Male; i++) {
           const InsertAnimal = await db?.query(`
-              INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name, animal_father_id, animal_mother_id)
-              VALUES (?, "Male", date('now'), 1, 0, ?, ?, ?)
+              INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name, animal_father_id, animal_mother_id, archive)
+              VALUES (?, "Male", date('now'), 1, 0, ?, ?, ?, 0)
           `, [breed_id, MotherName + 'Child' + i, father_id, MotherId]);
 
           console.log("Inserted Male")
@@ -907,8 +907,8 @@ const givenBirth = (pregId:number, offSpringNum:number, AliveNum:number, Male: n
         console.log(`Female ${Female}`);
         for (let i = 0; i < Female; i++) {
           const InsertAnimal = await db?.query(`
-            INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name, animal_father_id, animal_mother_id)
-            VALUES (?, "Female", date('now'), 1, 0, ?, ?, ?)
+            INSERT INTO Animal (breed_id, gender, birthdate, health_status_id, pregnancy_status, name, animal_father_id, animal_mother_id, archive)
+            VALUES (?, "Female", date('now'), 1, 0, ?, ?, ?, 0)
         `, [breed_id, MotherName + 'Child' + i, father_id, MotherId]);
           const animal_id = await db?.query(`
             SELECT MAX(id) AS id FROM Animal         
@@ -1427,10 +1427,7 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
                     </IonSelect>
                   </IonRow>
                   {gender === "Female" ?( <IonRow>
-                    <IonSelect label="Pregnant" disabled value={pregnancy} labelPlacement="floating" onIonChange={(e)=>setPregnancy(e.target.value as number)} className="ion-margin-bottom">
-                        <IonSelectOption value={1}>Yes</IonSelectOption>
-                        <IonSelectOption value={0}>No</IonSelectOption>
-                       </IonSelect>
+                    
                   </IonRow> ) : null}
                       
                   <IonGrid fixed={true}>
@@ -1842,10 +1839,7 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
                         </IonSelect>
                       </IonRow>
                       {gender === "Female" ?( <IonRow>
-                        <IonSelect label="Pregnant" disabled labelPlacement="floating" onIonChange={(e)=>setPregnancy(e.target.value as number)} className="ion-margin-bottom">
-                            <IonSelectOption value={1}>Yes</IonSelectOption>
-                            <IonSelectOption value={0}>No</IonSelectOption>
-                           </IonSelect>
+                        
                       </IonRow> ) : null}
                     <IonButton expand="block" className="ion-margin-top" onClick={() => addNewAnimal(breed, gender, birthdate, health, pregnancy, name, selectedMother, selectedFather)}>Add</IonButton>
                 </IonContent>
