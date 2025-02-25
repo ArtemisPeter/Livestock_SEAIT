@@ -1,5 +1,5 @@
 import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonCol, IonContent, IonDatetime, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonMenuButton, IonModal, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar, useIonAlert, RefresherEventDetail, IonTabs, IonTab, IonTabBar, IonTabButton, IonItemSliding, IonItemOption, IonItemOptions, IonGrid  } from "@ionic/react";
-import { add, alertOutline, bonfireOutline, checkmark, closeOutline, constructOutline, createOutline, downloadOutline, fastFoodOutline, happyOutline, listOutline, male, medkitOutline, save, saveOutline } from "ionicons/icons";
+import { add, alertOutline, bonfireOutline, checkmark, chevronBackCircleOutline, chevronBackOutline, closeOutline, constructOutline, createOutline, downloadOutline, fastFoodOutline, happyOutline, listOutline, male, medkitOutline, save, saveOutline } from "ionicons/icons";
 import React, { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import SideBar from "./SideBar";
@@ -1681,7 +1681,7 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
                                     <IonItemOption color="white" id={`preg-${p.PregId}`} onClick={()=>editDataPreg(p)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={createOutline} ></IonIcon></IonItemOption>
                                     <IonItemOption color="success" onClick={()=>SuccessPreg(p.PregId, p.ED_id, p.EH_id, p.animal_id_male)}  disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={checkmark} ></IonIcon></IonItemOption>
                                     <IonItemOption color="warning" onClick={() => FailedPreg(p.PregId, p.ED_id, p.EH_id)} disabled={p.PregStat === 'Failed' || p.PregStat === 'Success' || p.PregStat === 'Given Birth'}><IonIcon slot="icon-only" icon={alertOutline} /></IonItemOption>
-
+                                    <IonItemOption color="warning" onClick={() => setIsOpen(true)} disabled={p.PregStat === 'Failed' || p.PregStat === 'On Going'}><IonIcon slot="icon-only" icon={chevronBackOutline} /></IonItemOption>
                                 </IonItemOptions>
                                 <IonItem>
                                 <IonLabel><h1>{date} <IonBadge>{p.PregStat}</IonBadge></h1><small>Breed Date: {date2} | Exp Due: {p.ExpDueDate} | Father: {p.name}</small></IonLabel>
