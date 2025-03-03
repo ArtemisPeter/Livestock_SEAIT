@@ -1,5 +1,5 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonApp, IonContent, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -41,71 +41,34 @@ import Livestock_Disease from "./pages/Livestock_Disease";
 import AllAnimalMain from "./pages/AllAnimalMain";
 import Setting from "./pages/Setting";
 
-
-
 setupIonicReact();
 
 const App: React.FC = () => {
 
   return (
+    <IonApp>
 
-      <IonApp>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <Route exact path="/home">
-            <Home />
-          </Route>
-          <Route exact path="/login">
-            <Login />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/login" />
-          </Route>
-          <Route exact path="/landing">
-            <Landing />
-          </Route>
-          <Route exact path="/addAnimal">
-            <AllAnimalMain />
-          </Route>
-          <Route exact path="/addAnimalCategory">
-            <AddAnimalCategory />
-          </Route>
-          <Route exact path="/addAnimalType">
-            <AddAnimalType />
-          </Route>
-          <Route exact path="/persons">
-            <Person />
-          </Route>
-          <Route exact path="/vaccine">
-            <Vaccine />
-          </Route>
-          <Route exact path="/feeds">
-            <Feeds />
-          </Route>
-          
-          <Route exact path="/disease">
-            <Disease />
-          </Route>
-          <Route exact path="/livestock_feed">
-            <LiveStock_Feed />
-          </Route>
-          <Route exact path="/livestock_disease">
-            <Livestock_Disease />
-          </Route>
+        <IonReactRouter>
+          <IonRouterOutlet>
+            <Route exact path="/home" component={Home} />
+            <Route exact path="/login" component={Login} />
+            <Route exact path="/" render={() => <Redirect to="/login" />} />
+            <Route exact path="/landing" component={Landing} />
+            <Route exact path="/addAnimal" component={AllAnimalMain} />
+            <Route exact path="/addAnimalCategory" component={AddAnimalCategory} />
+            <Route exact path="/addAnimalType" component={AddAnimalType} />
+            <Route exact path="/persons" component={Person} />
+            <Route exact path="/vaccine" component={Vaccine} />
+            <Route exact path="/feeds" component={Feeds} />
+            <Route exact path="/disease" component={Disease} />
+            <Route exact path="/livestock_feed" component={LiveStock_Feed} />
+            <Route exact path="/livestock_disease" component={Livestock_Disease} />
+            <Route exact path="/specAnimal/:id" component={AddAnimal} />
+            <Route exact path="/Setting" component={Setting} />
+          </IonRouterOutlet>
+        </IonReactRouter>
 
-          <Route exact path="/specAnimal/:id">
-            <AddAnimal />
-          </Route>
-
-          <Route exact path="/Setting">
-            <Setting />
-          </Route>
-
-        </IonRouterOutlet>
-      </IonReactRouter>
     </IonApp>
-
-    
   );
 };
 
