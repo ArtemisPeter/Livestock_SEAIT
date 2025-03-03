@@ -67,6 +67,16 @@ const SideBar: React.FC = () =>{
                     </IonItem>
                 
                 </IonItemGroup>
+
+                <IonItemGroup>
+                    <IonItemDivider>
+                        <IonLabel>Security</IonLabel>
+                    </IonItemDivider>
+                    <IonItem>
+                        <IonLabel onClick={()=>history.push('/Setting')}>Set Pin</IonLabel>
+                    </IonItem>
+                
+                </IonItemGroup>
                
             </IonList>
             

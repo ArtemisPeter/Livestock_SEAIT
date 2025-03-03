@@ -274,15 +274,12 @@ const Landing: React.FC = () => {
   const exportToExcel = async (data: any[], fileName: string) => {
     try {
       // Step 1: Create a workbook and worksheet
-      const worksheet = XLSX.utils.json_to_sheet(data); // Converts array to worksheet
+      const worksheet = XLSX.utils.json_to_sheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
   
       // Step 2: Generate Excel file as binary
-      const excelBuffer = XLSX.write(workbook, {
-        bookType: "xlsx",
-        type: "array",
-      });
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
       const blob = new Blob([excelBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -291,22 +288,44 @@ const Landing: React.FC = () => {
       const platform = Capacitor.getPlatform();
   
       if (platform === "web") {
-        // Web: Use FileSaver.js to download the file
-        saveAs(blob, fileName);
-        alert(`File downloaded as ${fileName}`);
+        // Append timestamp to avoid overwriting
+        const timestamp = new Date().getTime();
+        const newFileName = `${fileName.replace(".xlsx", "")}_${timestamp}.xlsx`;
+        
+        saveAs(blob, newFileName);
+        alert(`File downloaded as ${newFileName}`);
       } else {
-        // Mobile: Use Capacitor Filesystem API
+        // Mobile: Check if file exists and rename if necessary
+        let newFileName = fileName;
+        let fileExists = await checkFileExists(fileName);
+  
+        if (fileExists) {
+          const timestamp = new Date().getTime();
+          newFileName = `${fileName.replace(".xlsx", "")}_${timestamp}.xlsx`;
+        }
+  
         const base64Data = await blobToBase64(blob);
         await Filesystem.writeFile({
-          path: fileName,
+          path: newFileName,
           data: base64Data,
-          directory: Directory.Documents, // Save to Documents folder
+          directory: Directory.Documents,
         });
-        alert(`File saved successfully as ${fileName}!`);
+  
+        alert(`File saved successfully as ${newFileName}!`);
       }
     } catch (error) {
-      console.error(`Error exporting ${fileName}:`, error);
-      alert(`Failed to export ${fileName}.`);
+      console.error(`Error exporting file:`, error);
+      alert(`Failed to export file.`);
+    }
+  };
+  
+  // Function to check if a file exists
+  const checkFileExists = async (fileName: string): Promise<boolean> => {
+    try {
+      await Filesystem.stat({ path: fileName, directory: Directory.Documents });
+      return true; // File exists
+    } catch (error) {
+      return false; // File does not exist
     }
   };
   const handleExport = async () => {

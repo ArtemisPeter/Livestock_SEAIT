@@ -74,8 +74,6 @@ const useSQLiteDB = () => {
           lname TEXT NOT NULL,
           pincode INTEGER
         );`,
-      `INSERT OR IGNORE INTO User (fname, lname, pincode) 
-        VALUES ('Admin', 'istrator', 1234);`,
       `CREATE TABLE IF NOT EXISTS Animal_Type (
           id INTEGER PRIMARY KEY NOT NULL,
           type TEXT NOT NULL,

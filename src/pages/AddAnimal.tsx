@@ -625,28 +625,32 @@ const AddAnimal: React.FC = () =>{
   }
 
   const downloadBarcode = async () => {
+    if (!barcodeRef.current) return;
+
     const canvas = await html2canvas(barcodeRef.current);
     const dataUrl = canvas.toDataURL('image/png');
 
-    // Convert the base64 string to a blob
-    const blob = await (await fetch(dataUrl)).blob();
-    const reader = new FileReader();
+    // Extract base64 data from the data URL
+    const base64Data = dataUrl.split(',')[1];
 
-    reader.onloadend = async () => {
-        const base64data = reader.result;
-
-        // Save the file using Capacitor's Filesystem
+    try {
         await Filesystem.writeFile({
-            path: 'barcodes/' + name + '.png', // Specify the path and file name
-            data: base64data, 
-            directory: Directory.Documents, // Choose an appropriate directory
-            recursive: true // Create the directory if it doesn't exist
+            path: `Download/${name}.png`, // Save to "Download/barcodes"
+            data: base64Data,
+            directory: Directory.ExternalStorage, // Save to External Storage so it's visible
+            recursive: true
         });
 
-        alert('Barcode saved successfully!');
-    };
-
-    reader.readAsDataURL(blob);
+        presentAlert({
+          header: "Barcode Saved Successfully!",
+          buttons: ['OK']
+      })
+    } catch (error) {
+      presentAlert({
+        header: "There is an error in saving Barcode",
+        buttons: ['OK']
+    })
+    }
 };
 
   const refreshThePage = (event: CustomEvent<RefresherEventDetail>) => {
@@ -1349,7 +1353,8 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
               <IonTabs>
                 <IonTab tab="animal">
                   <div id="animal-page" className="ion-padding">
-                  <IonRow>
+                    <IonContent fullscreen>
+                    <IonRow>
                     <IonCol className="ion-text-center">
                         <h2>Edit {modalAn.name}</h2>
                     </IonCol>
@@ -1467,6 +1472,8 @@ const modalPregnancy = useRef<HTMLIonModalElement>(null);
     </IonCol>
   </IonRow>
 </IonGrid>
+                    </IonContent>
+                  
                   </div>
              
                 </IonTab>
